@@ -19,6 +19,7 @@ class Cell:
             "W": True,
         }
         self.visited = False
+        self.icon = False
 
 
 class Maze:
@@ -29,6 +30,21 @@ class Maze:
             [Cell() for _ in range(width)]
             for _ in range(height)
         ]
+        self.logo = [
+            [1,0,0,0,1,1,1],
+            [1,0,0,0,0,0,1],
+            [1,1,1,0,1,1,1],
+            [0,0,1,0,1,0,0],
+            [0,0,1,0,1,1,1],
+        ]
+        start_logo_y = height // 2 - 2
+        start_logo_x = width // 2 - 3
+        for y in range(len(self.logo)):
+            for x in range(len(self.logo[0])):
+                if self.logo[y][x]:
+                    # protéger les cellules du logo: icône + marquée comme visitée
+                    self.grid[start_logo_y + y][start_logo_x + x].icon = True
+                    self.grid[start_logo_y + y][start_logo_x + x].visited = True
 
     def get_neighbors(self, x, y):
         neighbors = []
@@ -42,7 +58,8 @@ class Maze:
 
         for direction, (nx, ny) in directions.items():
             if 0 <= nx < self.width and 0 <= ny < self.height:
-                if not self.grid[nx][ny].visited:
+                # utiliser self.grid[ny][nx] (ligne, colonne)
+                if not self.grid[ny][nx].visited and not self.grid[ny][nx].icon:
                     neighbors.append((direction, nx, ny))
 
         return neighbors
@@ -61,6 +78,7 @@ class Maze:
         nx = x + dx[direction]
         ny = y + dy[direction]
 
+        # grilles indexées [ligne][colonne] => [y][x]
         self.grid[y][x].walls[direction] = False
         self.grid[ny][nx].walls[opposite[direction]] = False
     
@@ -69,7 +87,8 @@ class Maze:
         stack = []
         current_cell = (start_x, start_y)
 
-        self.grid[start_x][start_y].visited = True
+        # marquer la cellule de départ correctement (y, x)
+        self.grid[start_y][start_x].visited = True
         stack.append(current_cell)
 
         while (stack):
@@ -79,7 +98,8 @@ class Maze:
             if neighbors:
                 direction, nx, ny = random.choice(neighbors)
                 self.remove_wall(x, y, direction)
-                self.grid[nx][ny].visited = True
+                # marquer la cellule suivante correctement
+                self.grid[ny][nx].visited = True
                 stack.append((nx, ny))
             else:
                 stack.pop()
@@ -88,14 +108,14 @@ class Maze:
         for y in range(self.height):
             for x in range(self.width):
                 cell_value = 0
-                if self.grid[x][y].walls["N"] == True:
-                    cell_value += 8
-                if self.grid[x][y].walls["E"] == True:
-                    cell_value += 4
-                if self.grid[x][y].walls["S"] == True:
-                    cell_value += 2
-                if self.grid[x][y].walls["W"] == True:
+                if self.grid[y][x].walls["N"] == True:
                     cell_value += 1
+                if self.grid[y][x].walls["E"] == True:
+                    cell_value += 2
+                if self.grid[y][x].walls["S"] == True:
+                    cell_value += 4
+                if self.grid[y][x].walls["W"] == True:
+                    cell_value += 8
                 print(f"{cell_value:X}", end="")
             print()
 
@@ -105,10 +125,13 @@ class Maze:
         for y in range(self.height):
             line1 = "|"
             for x in range(self.width):
+                middle = " "
+                if (self.grid[y][x].icon):
+                    middle = "x"
                 if self.grid[y][x].walls["E"]:
-                    line1 += "   |"
+                    line1 += f" {middle} |"
                 else:
-                    line1 += "    "
+                    line1 += f" {middle}  "
             print(line1)
             line2 = "+"
             for x in range(self.width):
@@ -121,8 +144,8 @@ class Maze:
 
 
 def main():
-    maze = Maze(100, 100)
-    maze.generate()
+    maze = Maze(21, 19)
+    maze.generate(10, 10)
     maze.display_ascii()
 
 if __name__ == "__main__":
