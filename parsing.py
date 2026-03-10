@@ -1,17 +1,27 @@
-def str_to_dict(content):
-    i_width = content.find("WIDTH")
-    i_height = content.find("HEIGHT")
-    i_entry = content.find("ENTRY")
-    iexit = content.find("EXIT")
-    i_output = content.find("OUTPUT_FILE")
-    i_perfect = content.find("PERFECT")
+def str_to_dict(content: str) -> dict:
+    result = {}
+    lst_content = content.split("\n")
+    for element in lst_content:
+        element_splited = element.split("=")
+        if element_splited[0] == "WIDTH" or element_splited[0] == "HEIGHT":
+            result[element_splited[0]] = int(element_splited[1])
+        elif (element_splited[0] == "ENTRY" or element_splited[0] == "EXIT"):
+            value = element_splited[1].split(",")
+            result[element_splited[0]] = (int(value[0]),int(value[1]))
+        elif (element_splited[0] == "OUTPUT_FILE"):
+            result[element_splited[0]] = element_splited[1]
+        elif (element_splited[0] == "PERFECT"):
+            result[element_splited[0]] = bool(element_splited[1])
+    return result
 
+	
 def parssing(name_file: str) -> dict:
     try:
         with open(name_file, "r") as file:
             content = file.read()
             print(content)
-            str_to_dict(content)
+            result = str_to_dict(content)
+            print(result)
     except FileNotFoundError:
         print("[ERROR] File not found")
     except PermissionError:
