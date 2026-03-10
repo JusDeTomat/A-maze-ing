@@ -13,7 +13,7 @@ def str_to_dict(content: str) -> dict:
                 result[element_splited[0]] = element_splited[1]
             elif (element_splited[0] == "PERFECT"):
                 result[element_splited[0]] = bool(element_splited[1])
-            return result
+        return result
     except Exception:
         raise(ValueError("file need to look like this :\n"
               ">>    WIDTH=20\n"
