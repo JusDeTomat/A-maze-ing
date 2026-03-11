@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 def str_to_dict(content: str) -> dict:
     result = {}
     try:
