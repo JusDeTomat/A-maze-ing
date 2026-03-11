@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import random
 import sys
+from collections import deque
 
 config = {
     "width" : 20,
@@ -21,13 +22,14 @@ class Cell:
         }
         self.visited = False
         self.icon = False
+        self.path = False
 
 
 class Maze:
-    def __init__(self, width: int, height: int, seed:) -> None:
+    def __init__(self, width: int, height: int, seed: str) -> None:
         self.width = width
         self.height = height
-        self.seed = seed
+        self.seed = seed or None
         self.grid = [
             [Cell() for _ in range(width)]
             for _ in range(height)
@@ -151,8 +153,11 @@ class Maze:
             line1 = "|"
             for x in range(self.width):
                 middle = " "
-                if (self.grid[y][x].icon):
+                # priorité d'affichage: logo (x) > chemin (o)
+                if self.grid[y][x].icon:
                     middle = "x"
+                elif self.grid[y][x].path:
+                    middle = "o"
                 if self.grid[y][x].walls["E"]:
                     line1 += f" {middle} |"
                 else:
@@ -167,10 +172,66 @@ class Maze:
 
             print(line2)
 
+    def solve(self, start=None, end=None):
+        for row in self.grid:
+            for cell in row:
+                cell.path = False
+
+        sx, sy = start
+        ex, ey = end
+
+        if not (0 <= sx < self.width and 0 <= sy < self.height):
+            return []
+        if not (0 <= ex < self.width and 0 <= ey < self.height):
+            return []
+        
+        q = deque()
+        q.append((sx, sy))
+        parents = { (sx, sy): None }
+
+        found = False
+        while q:
+            x, y = q.popleft()
+            if (x, y) == (ex, ey):
+                found = True
+                break
+
+            directions = {
+                "N": (0, -1),
+                "E": (1, 0),
+                "S": (0, 1),
+                "W": (-1, 0),
+            }
+            for d, (dx, dy) in directions.items():
+                if not self.grid[y][x].walls[d]:
+                    nx = x + dx
+                    ny = y + dy
+                    if 0 <= nx < self.width and 0 <= ny < self.height:
+                        if (nx, ny) not in parents:
+                            parents[(nx, ny)] = (x, y)
+                            q.append((nx, ny))
+
+        path_coords = []
+        if found:
+            cur = (ex, ey)
+            while cur is not None:
+                path_coords.append(cur)
+                cur = parents.get(cur)
+            path_coords.reverse()
+            for x, y in path_coords:
+                self.grid[y][x].path = True
+
+        self.path = path_coords
+        return path_coords
+
 
 def main():
-    maze = Maze(20, 20)
+    seed = None
+    if len(sys.argv) == 2:
+        seed = sys.argv[1]
+    maze = Maze(20, 20, seed)
     maze.generate_perfect()
+    maze.solve((0,0), (19,19))
     maze.display_ascii()
 
 if __name__ == "__main__":
