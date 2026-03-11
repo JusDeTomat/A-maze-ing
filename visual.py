@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from mlx import Mlx
 import random
 from maze_generator import Maze, Cell
