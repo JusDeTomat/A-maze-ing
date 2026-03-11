@@ -97,7 +97,6 @@ class Maze:
         while (stack):
             x, y = stack[-1]
             neighbors = self.get_neighbors(x, y)
-
             if neighbors:
                 direction, nx, ny = random.choice(neighbors)
                 self.remove_wall(x, y, direction)
@@ -176,6 +175,12 @@ class Maze:
         for row in self.grid:
             for cell in row:
                 cell.path = False
+
+        # paramètres par défaut
+        if start is None:
+            start = config.get("entry", (0, 0))
+        if end is None:
+            end = config.get("exit", (self.width - 1, self.height - 1))
 
         sx, sy = start
         ex, ey = end

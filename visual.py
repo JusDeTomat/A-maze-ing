@@ -1,54 +1,6 @@
 from mlx import Mlx
 import random
-
-
-class Cell:
-    def __init__(self):
-        self.wall = {"N": True, "E": True, "S": True, "W": True}
-        self.visited = False
-        self.icon = False
-
-
-def generate_maze(rows, cols):
-    # Création de la grille
-    maze = [[Cell() for _ in range(cols)] for _ in range(rows)]
-
-    def get_neighbors(r, c):
-        neighbors = []
-        if r > 0:        neighbors.append((r-1, c, "N", "S"))
-        if r < rows-1:   neighbors.append((r+1, c, "S", "N"))
-        if c > 0:        neighbors.append((r, c-1, "W", "E"))
-        if c < cols-1:   neighbors.append((r, c+1, "E", "W"))
-        return neighbors
-
-    # DFS iteratif (algorithme de génération par backtracking)
-    stack = [(0, 0)]
-    maze[0][0].visited = True
-    visited_count = 1
-    total = rows * cols
-
-    while visited_count < total:
-        r, c = stack[-1]
-        unvisited = [(nr, nc, d1, d2) for nr, nc, d1, d2 
-                     in get_neighbors(r, c) if not maze[nr][nc].visited]
-
-        if unvisited:
-            nr, nc, d1, d2 = random.choice(unvisited)
-            # Suppression des murs entre les deux cellules
-            maze[r][c].wall[d1] = False
-            maze[nr][nc].wall[d2] = False
-            maze[nr][nc].visited = True
-            stack.append((nr, nc))
-            visited_count += 1
-        else:
-            stack.pop()
-
-    maze[1][1].icon = True
-    maze[2][1].icon = True
-    maze[3][1].icon = True
-    maze[4][1].icon = True
-    return maze
-
+from maze_generator import Maze, Cell
 
 class ImgData:
     """Structure for image data"""
@@ -296,19 +248,33 @@ def mouse_hook(button, x, y, app):
 def aff_maze(app, maze):
     x = app.size
     y = app.size
-    for line in maze:
+
+    if hasattr(maze, "grid"):
+        grid = maze.grid
+    else:
+        grid = maze
+
+    for line in grid:
         for case in line:
-            if not case.icon:
-                if case.wall["N"]:
-                    app.print_wall_N(y, x)
-                if case.wall["E"]:
-                    app.print_wall_E(y, x)
-                if case.wall["S"]:
-                    app.print_wall_S(y, x)
-                if case.wall["W"]:
-                    app.print_wall_W(y, x)
+            walls = None
+            if hasattr(case, "wall"):
+                walls = case.wall
+            elif hasattr(case, "walls"):
+                walls = case.walls
+
+            icon = getattr(case, "icon", False)
+
+            if not icon:
+                if walls is not None and walls.get("N", False):
+                    app.print_wall_W(x, y)
+                if walls is not None and walls.get("E", False):
+                    app.print_wall_S(x, y)
+                if walls is not None and walls.get("S", False):
+                    app.print_wall_E(x, y)
+                if walls is not None and walls.get("W", False):
+                    app.print_wall_N(x, y)
             else:
-                app.print_icon(y, x)
+                app.print_icon(x, y)
             x += app.size
         x = app.size
         y += app.size
@@ -345,7 +311,10 @@ def main():
                                 int(app.win_size[1] - 95),
                                 150, 50, "Exit"
                                 )
-    app.maze = generate_maze(app.maze_size[0], app.maze_size[1])
+    maze = Maze(app.maze_size[0], app.maze_size[1], None)
+    maze.generate_perfect()
+    maze.solve()
+    app.maze = maze.grid
     app.mlx.mlx_mouse_hook(app.win, mouse_hook, app)
     app.mlx.mlx_loop_hook(app.mlx_ptr, app.scene, app)
     app.mlx.mlx_hook(app.win, 33, 0, app.close_win, None)
