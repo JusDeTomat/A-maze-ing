@@ -175,20 +175,37 @@ class App:
 
     def change_color(self):
         colors = [
-            0xFFFFFFFF,
-            0xFFFF0000,
-            0xFF00FF00,
-            0xFF0000FF,
-            0xFFFFFF00,
-            0xFF00FFFF,
-            0xFFFF00FF,
-            0xFF808080
-        ]
+                (0xFF000000, 0xFFFFFFFF),
+
+                (0xFF2C3E50, 0xFFECF0F1),
+                (0xFF34495E, 0xFFBDC3C7),
+
+                (0xFF1F618D, 0xFFD6EAF8),
+                (0xFF154360, 0xFFA9CCE3),
+
+                (0xFF145A32, 0xFFD4EFDF),
+                (0xFF196F3D, 0xFFA9DFBF),
+
+                (0xFF7D6608, 0xFFFCF3CF),
+                (0xFF7E5109, 0xFFFAD7A0),
+
+                (0xFF641E16, 0xFFF5B7B1),
+                (0xFF922B21, 0xFFFADBD8),
+
+                (0xFF4A235A, 0xFFE8DAEF),
+                (0xFF5B2C6F, 0xFFD7BDE2),
+
+                (0xFF17202A, 0xFFD5DBDB),
+                (0xFF212F3C, 0xFFEAECEE),
+
+                (0xFF0B5345, 0xFFD1F2EB),
+                (0xFF0E6251, 0xFFA3E4D7)
+            ]
         self.i_color += 1
         if (self.i_color >= len(colors)):
             self.i_color = 0
-        self.color_maze = colors[self.i_color]
-
+        self.color_maze = colors[self.i_color][1]
+        self.color_back = colors[self.i_color][0]
 
     def scene(self, _):
         if (self.scene_nb == 0):
@@ -203,10 +220,12 @@ class App:
             if self.check("color_maze"):
                 self.change_color()
                 self.scene_nb = 0
+            if self.check("generate"):
+                self.scene_nb = 0
 
     def draw_back(self):
-        for y in range(self.win_size[0] + 200):
-            for x in range(self.win_size[1]):
+        for y in range((self.size // 2), self.maze_size[0] * self.size + (self.size // 2)):
+            for x in range((self.size // 2), self.maze_size[1] * self.size + (self.size // 2)):
                 self.mlx.mlx_pixel_put(self.mlx_ptr, self.win,
                                        x,
                                        y,
@@ -299,7 +318,7 @@ def main():
     app = App()
     app.mlx = Mlx()
     app.mlx_ptr = app.mlx.mlx_init()
-    app.maze_size = (120, 5)
+    app.maze_size = (30, 30)
     app.size = app.cal_size(app.maze_size[0], app.maze_size[1])
     app.win_size = app.cal_win_size()
     print(app.win_size)
@@ -316,6 +335,11 @@ def main():
                                       int((app.win_size[1] // 2)),
                                       150, 50, "Change Color"
                                       )
+    app.button["generate"] = Button(app.mlx, app.mlx_ptr, app.win,
+                                    int(app.win_size[0] - 225),
+                                    int((app.win_size[1] // 2) - 110),
+                                    150, 50, "Generate"
+                                    )
     app.button["exit"] = Button(app.mlx, app.mlx_ptr, app.win,
                                 int(app.win_size[0] - 225),
                                 int(app.win_size[1] - 95),
