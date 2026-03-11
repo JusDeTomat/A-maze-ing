@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from mlx import Mlx
 import random
 from maze_generator import Maze, Cell
@@ -85,9 +86,13 @@ class App:
         self.maze = 0
         self.size = 0
         self.i_color = 0
-        self.color_maze = 0xFFFFFF00
-        self.color_back = 0xFFBDC3C7
+        self.path = False
+        self.color_maze = 0xFF1B2631
+        self.color_back = 0xFFD6EAF8
         self.color_icon = 0xFF2ECC71
+        self.color_path = 0xFFF4D03F
+        self.color_start = 0xFFFFFF00
+        self.color_end = 0xFFFF6347
         self.wall_size = 1
 
     def add_img(self, name):
@@ -127,45 +132,48 @@ class App:
 
     def change_color(self):
         colors = [
-                (0xFF000000, 0xFFFFFFFF),
+            (0xFF1B2631, 0xFFD6EAF8, 0xFFF4D03F),
+            (0xFF145A32, 0xFFD4EFDF, 0xFFE74C3C),
+            (0xFF4A235A, 0xFFE8DAEF, 0xFF1ABC9C),
+            (0xFF154360, 0xFFA9CCE3, 0xFFFF7F50),
+            (0xFF641E16, 0xFFF5B7B1, 0xFF2ECC71),
+            (0xFF7D6608, 0xFFFCF3CF, 0xFF3498DB),
+            (0xFF17202A, 0xFFD5DBDB, 0xFFFF00FF),
+            (0xFF0B5345, 0xFFD1F2EB, 0xFFFF8C00),
+            (0xFF512E5F, 0xFFD7BDE2, 0xFF00FFFF),
 
-                (0xFF2C3E50, 0xFFECF0F1),
-                (0xFF34495E, 0xFFBDC3C7),
-
-                (0xFF1F618D, 0xFFD6EAF8),
-                (0xFF154360, 0xFFA9CCE3),
-
-                (0xFF145A32, 0xFFD4EFDF),
-                (0xFF196F3D, 0xFFA9DFBF),
-
-                (0xFF7D6608, 0xFFFCF3CF),
-                (0xFF7E5109, 0xFFFAD7A0),
-
-                (0xFF641E16, 0xFFF5B7B1),
-                (0xFF922B21, 0xFFFADBD8),
-
-                (0xFF4A235A, 0xFFE8DAEF),
-                (0xFF5B2C6F, 0xFFD7BDE2),
-
-                (0xFF17202A, 0xFFD5DBDB),
-                (0xFF212F3C, 0xFFEAECEE),
-
-                (0xFF0B5345, 0xFFD1F2EB),
-                (0xFF0E6251, 0xFFA3E4D7)
-            ]
+            (0xFF273746, 0xFFEAECEE, 0xFFFF1493),
+            (0xFF784212, 0xFFFAD7A0, 0xFF00FF7F),
+            (0xFF4D5656, 0xFFEBF5FB, 0xFFFFA500),
+            (0xFF7B241C, 0xFFFADBD8, 0xFF7FFF00),
+            (0xFF1F618D, 0xFFD6EAF8, 0xFFFF4500),
+            (0xFF186A3B, 0xFFA9DFBF, 0xFF8A2BE2),
+            (0xFF6E2C00, 0xFFF5CBA7, 0xFF00CED1),
+            (0xFF212F3C, 0xFFEAECEE, 0xFFFFD700),
+            (0xFF424949, 0xFFF2F4F4, 0xFFADFF2F),
+            (0xFF2C3E50, 0xFFECF0F1, 0xFFFF6347)
+        ]
         self.i_color += 1
         if (self.i_color >= len(colors)):
             self.i_color = 0
         self.color_maze = colors[self.i_color][1]
         self.color_back = colors[self.i_color][0]
+        self.color_path = colors[self.i_color][2]
 
     def scene(self, _):
         if (self.scene_nb == 0):
-            # self.draw_back()
+            self.draw_back()
+            if self.path:
+                self.maze.solve()
+                self.aff_path()
             aff_maze(self, self.maze)
             self.scene_nb = 1
         if (self.scene_nb == 1):
             if self.check("show_path"):
+                if (self.path):
+                    self.path = False
+                else:
+                    self.path = True
                 self.scene_nb = 0
             if self.check("exit"):
                 self.close_win(None)
@@ -173,6 +181,10 @@ class App:
                 self.change_color()
                 self.scene_nb = 0
             if self.check("generate"):
+                self.maze = Maze(self.maze_size[0], self.maze_size[1], None)
+                self.maze.generate_perfect()
+                self.scene_nb = 0
+            if self.check("42color"):
                 self.scene_nb = 0
 
     def draw_back(self):
@@ -227,6 +239,56 @@ class App:
                                        self.color_icon)
                 j += 1
             i += 1
+
+    def print_start(self, x, y):
+        i = 0
+        j = 0
+        while ((y - (self.size // 2)) + i <= y + (self.size // 2)):
+            j = 0
+            while ((x - (self.size // 2) + j <= x + (self.size // 2))):
+                self.mlx.mlx_pixel_put(self.mlx_ptr, self.win,
+                                       (x - (self.size // 2)) + j,
+                                       (y - (self.size // 2)) + i,
+                                       self.color_start)
+                j += 1
+            i += 1
+
+    def print_end(self, x, y):
+        i = 0
+        j = 0
+        while ((y - (self.size // 2)) + i <= y + (self.size // 2)):
+            j = 0
+            while ((x - (self.size // 2) + j <= x + (self.size // 2))):
+                self.mlx.mlx_pixel_put(self.mlx_ptr, self.win,
+                                       (x - (self.size // 2)) + j,
+                                       (y - (self.size // 2)) + i,
+                                       self.color_end)
+                j += 1
+            i += 1
+
+    def print_path(self, x, y):
+        i = 0
+        j = 0
+        while ((y - (self.size // 2)) + i <= y + (self.size // 2)):
+            j = 0
+            while ((x - (self.size // 2) + j <= x + (self.size // 2))):
+                self.mlx.mlx_pixel_put(self.mlx_ptr, self.win,
+                                       (x - (self.size // 2)) + j,
+                                       (y - (self.size // 2)) + i,
+                                       self.color_path)
+                j += 1
+            i += 1
+
+    def aff_path(self):
+        x = self.size
+        y = self.size
+        for line in self.maze.grid:
+            for case in line:
+                if case.path:
+                    self.print_path(x, y)
+                x += self.size
+            x = self.size
+            y += self.size
 
     def cal_size(self, x, y):
         i = 0
@@ -311,10 +373,15 @@ def main():
                                 int(app.win_size[1] - 95),
                                 150, 50, "Exit"
                                 )
+    app.button["42color"] = Button(app.mlx, app.mlx_ptr, app.win,
+                                   int(app.win_size[0] - 225),
+                                   int((app.win_size[1] // 2) - 165),
+                                   150, 50, "Change 42 color"
+                                   )
     maze = Maze(app.maze_size[0], app.maze_size[1], None)
     maze.generate_perfect()
     maze.solve()
-    app.maze = maze.grid
+    app.maze = maze
     app.mlx.mlx_mouse_hook(app.win, mouse_hook, app)
     app.mlx.mlx_loop_hook(app.mlx_ptr, app.scene, app)
     app.mlx.mlx_hook(app.win, 33, 0, app.close_win, None)
