@@ -2,16 +2,10 @@
 import random
 import sys
 from collections import deque
+from parsing import parsing
 
-config = {
-    "width" : 20,
-    "height": 20,
-    "entry": (0,0),
-    "exit": (19,14),
-    "output_file": "maze.txt",
-    "perfect": True
-}
-
+config = parsing("config.txt")
+print(config)
 class Cell:
     def __init__(self):
         self.walls = {
@@ -26,13 +20,13 @@ class Cell:
 
 
 class Maze:
-    def __init__(self, width: int, height: int, seed: str) -> None:
-        self.width = width
-        self.height = height
-        self.seed = seed or None
+    def __init__(self) -> None:
+        self.width = config["WIDTH"]
+        self.height = config["HEIGHT"]
+        self.seed = config["SEED"] or None
         self.grid = [
-            [Cell() for _ in range(width)]
-            for _ in range(height)
+            [Cell() for _ in range(self.width)]
+            for _ in range(self.height)
         ]
         self.logo = [
             [1,0,0,0,1,1,1],
@@ -41,8 +35,8 @@ class Maze:
             [0,0,1,0,1,0,0],
             [0,0,1,0,1,1,1],
         ]
-        start_logo_y = height // 2 - 2
-        start_logo_x = width // 2 - 3
+        start_logo_y = self.height // 2 - 2
+        start_logo_x = self.width // 2 - 3
         for y in range(len(self.logo)):
             for x in range(len(self.logo[0])):
                 if self.logo[y][x]:
@@ -104,7 +98,7 @@ class Maze:
                 stack.append((nx, ny))
             else:
                 stack.pop()
-    
+
     def generate_imperfect(self):
         self.generate_perfect()
         if self.seed is not None:
@@ -171,16 +165,12 @@ class Maze:
 
             print(line2)
 
-    def solve(self, start=None, end=None):
+    def solve(self):
+        start = config["ENTRY"]
+        end = config["EXIT"]
         for row in self.grid:
             for cell in row:
                 cell.path = False
-
-        # paramètres par défaut
-        if start is None:
-            start = config.get("entry", (0, 0))
-        if end is None:
-            end = config.get("exit", (self.width - 1, self.height - 1))
 
         sx, sy = start
         ex, ey = end
@@ -231,12 +221,12 @@ class Maze:
 
 
 def main():
-    seed = None
-    if len(sys.argv) == 2:
-        seed = sys.argv[1]
-    maze = Maze(20, 20, seed)
-    maze.generate_perfect()
-    maze.solve((0,0), (19,19))
+    maze = Maze()
+    if config["PERFECT"] == "True":
+        maze.generate_perfect()
+    else:
+        maze.generate_imperfect()
+    maze.solve()
     maze.display_ascii()
 
 if __name__ == "__main__":

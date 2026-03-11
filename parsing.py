@@ -5,6 +5,7 @@ def str_to_dict(content: str) -> dict:
         lst_content = content.split("\n")
         for element in lst_content:
             element_splited = element.split("=")
+            print(element_splited[1])
             if element_splited[0] == "WIDTH" or element_splited[0] == "HEIGHT":
                 result[element_splited[0]] = int(element_splited[1])
             elif (element_splited[0] == "ENTRY" or element_splited[0] == "EXIT"):
@@ -14,6 +15,8 @@ def str_to_dict(content: str) -> dict:
                 result[element_splited[0]] = element_splited[1]
             elif (element_splited[0] == "PERFECT"):
                 result[element_splited[0]] = bool(element_splited[1])
+            elif (element_splited[0] == "SEED" and element_splited[1] is not "None"):
+                result[element_splited[0]] = element_splited[1]
         return result
     except Exception:
         raise(ValueError("file need to look like this :\n"
@@ -22,24 +25,21 @@ def str_to_dict(content: str) -> dict:
               "      ENTRY=0,0\n"
               "      EXIT=19,14\n"
               "      OUTPUT_FILE=maze.txt\n"
-              "      PERFECT=True'"))
+              "      PERFECT=True\n"
+              "      SEED=None"))
 
 
 	
-def parssing(name_file: str) -> dict:
+def parsing(name_file: str) -> dict:
     try:
         with open(name_file, "r") as file:
             content = file.read()
-            print(content)
             result = str_to_dict(content)
-            print(result)
     except FileNotFoundError:
         print("[ERROR] File not found")
     except PermissionError:
         print("[ERROR] Need permition for open file")
     except (Exception, ValueError) as e:
         print(f"[ERROR] {e}")
-
-
-if (__name__ == "__main__"):
-    parssing("test.txt")
+    else:
+        return result
