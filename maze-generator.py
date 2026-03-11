@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
-import random 
+import random
+import sys
 
 config = {
     "width" : 20,
@@ -23,9 +24,10 @@ class Cell:
 
 
 class Maze:
-    def __init__(self, width: int, height: int) -> None:
+    def __init__(self, width: int, height: int, seed:) -> None:
         self.width = width
         self.height = height
+        self.seed = seed
         self.grid = [
             [Cell() for _ in range(width)]
             for _ in range(height)
@@ -42,7 +44,6 @@ class Maze:
         for y in range(len(self.logo)):
             for x in range(len(self.logo[0])):
                 if self.logo[y][x]:
-                    # protéger les cellules du logo: icône + marquée comme visitée
                     self.grid[start_logo_y + y][start_logo_x + x].icon = True
                     self.grid[start_logo_y + y][start_logo_x + x].visited = True
 
@@ -58,7 +59,6 @@ class Maze:
 
         for direction, (nx, ny) in directions.items():
             if 0 <= nx < self.width and 0 <= ny < self.height:
-                # utiliser self.grid[ny][nx] (ligne, colonne)
                 if not self.grid[ny][nx].visited and not self.grid[ny][nx].icon:
                     neighbors.append((direction, nx, ny))
 
@@ -78,16 +78,17 @@ class Maze:
         nx = x + dx[direction]
         ny = y + dy[direction]
 
-        # grilles indexées [ligne][colonne] => [y][x]
         self.grid[y][x].walls[direction] = False
         self.grid[ny][nx].walls[opposite[direction]] = False
     
 
-    def generate(self, start_x=0, start_y=0):
+    def generate_perfect(self, start_x=0, start_y=0):
         stack = []
         current_cell = (start_x, start_y)
 
-        # marquer la cellule de départ correctement (y, x)
+        if self.seed is not None:
+            random.seed(self.seed)
+
         self.grid[start_y][start_x].visited = True
         stack.append(current_cell)
 
@@ -98,11 +99,35 @@ class Maze:
             if neighbors:
                 direction, nx, ny = random.choice(neighbors)
                 self.remove_wall(x, y, direction)
-                # marquer la cellule suivante correctement
                 self.grid[ny][nx].visited = True
                 stack.append((nx, ny))
             else:
                 stack.pop()
+    
+    def generate_imperfect(self):
+        self.generate_perfect()
+        if self.seed is not None:
+            random.seed(self.seed)
+        maze_size = self.height * self.width
+        for _ in range(max(1, maze_size // 10)):
+            x = random.randint(0, self.width - 1)
+            y = random.randint(0, self.height - 1)
+            direction = random.choice(["N", "S", "E", "W"])
+
+            dx = {"E": 1, "W": -1, "N": 0, "S": 0}
+            dy = {"E": 0, "W": 0, "N": -1, "S": 1}
+            nx = x + dx[direction]
+            ny = y + dy[direction]
+
+            if not (0 <= nx < self.width and 0 <= ny < self.height):
+                continue
+
+            if self.grid[y][x].icon or self.grid[ny][nx].icon:
+                continue
+
+            if self.grid[y][x].walls[direction] == True:
+                self.remove_wall(x, y, direction)
+
 
     def display(self):
         for y in range(self.height):
@@ -144,8 +169,8 @@ class Maze:
 
 
 def main():
-    maze = Maze(21, 19)
-    maze.generate(10, 10)
+    maze = Maze(20, 20)
+    maze.generate_perfect()
     maze.display_ascii()
 
 if __name__ == "__main__":
