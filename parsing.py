@@ -5,7 +5,6 @@ def str_to_dict(content: str) -> dict:
         lst_content = content.split("\n")
         for element in lst_content:
             element_splited = element.split("=")
-            print(element_splited[1])
             if element_splited[0] == "WIDTH" or element_splited[0] == "HEIGHT":
                 result[element_splited[0]] = int(element_splited[1])
             elif (element_splited[0] == "ENTRY" or element_splited[0] == "EXIT"):
@@ -15,7 +14,7 @@ def str_to_dict(content: str) -> dict:
                 result[element_splited[0]] = element_splited[1]
             elif (element_splited[0] == "PERFECT"):
                 result[element_splited[0]] = bool(element_splited[1])
-            elif (element_splited[0] == "SEED" and element_splited[1] is not "None"):
+            elif (element_splited[0] == "SEED"):
                 result[element_splited[0]] = element_splited[1]
         return result
     except Exception:

@@ -5,7 +5,7 @@ from collections import deque
 from parsing import parsing
 
 config = parsing("config.txt")
-print(config)
+
 class Cell:
     def __init__(self):
         self.walls = {
@@ -23,7 +23,7 @@ class Maze:
     def __init__(self) -> None:
         self.width = config["WIDTH"]
         self.height = config["HEIGHT"]
-        self.seed = config["SEED"] or None
+        self.seed = None
         self.grid = [
             [Cell() for _ in range(self.width)]
             for _ in range(self.height)

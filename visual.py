@@ -181,7 +181,7 @@ class App:
                 self.change_color()
                 self.scene_nb = 0
             if self.check("generate"):
-                self.maze = Maze(self.maze_size[0], self.maze_size[1], None)
+                self.maze = Maze()
                 self.maze.generate_perfect()
                 self.scene_nb = 0
             if self.check("42color"):
@@ -345,8 +345,9 @@ def aff_maze(app, maze):
 def main():
     app = App()
     app.mlx = Mlx()
+    maze = Maze()
     app.mlx_ptr = app.mlx.mlx_init()
-    app.maze_size = (30, 30)
+    app.maze_size = (maze.width, maze.height)
     app.size = app.cal_size(app.maze_size[0], app.maze_size[1])
     app.win_size = app.cal_win_size()
     print(app.win_size)
@@ -378,7 +379,6 @@ def main():
                                    int((app.win_size[1] // 2) - 165),
                                    150, 50, "Change 42 color"
                                    )
-    maze = Maze(app.maze_size[0], app.maze_size[1], None)
     maze.generate_perfect()
     maze.solve()
     app.maze = maze
