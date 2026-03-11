@@ -322,7 +322,6 @@ def main():
                                 150, 50, "Exit"
                                 )
     app.maze = generate_maze(app.maze_size[0], app.maze_size[1])
-
     app.mlx.mlx_mouse_hook(app.win, mouse_hook, app)
     app.mlx.mlx_loop_hook(app.mlx_ptr, app.scene, app)
     app.mlx.mlx_hook(app.win, 33, 0, app.close_win, None)
