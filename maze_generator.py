@@ -23,6 +23,8 @@ class Maze:
     def __init__(self) -> None:
         self.width = config["WIDTH"]
         self.height = config["HEIGHT"]
+        self.start = config["ENTRY"]
+        self.end = config["EXIT"]
         self.seed = None
         self.grid = [
             [Cell() for _ in range(self.width)]
@@ -166,14 +168,12 @@ class Maze:
             print(line2)
 
     def solve(self):
-        start = config["ENTRY"]
-        end = config["EXIT"]
         for row in self.grid:
             for cell in row:
                 cell.path = False
 
-        sx, sy = start
-        ex, ey = end
+        sx, sy = self.start
+        ex, ey = self.end
 
         if not (0 <= sx < self.width and 0 <= sy < self.height):
             return []

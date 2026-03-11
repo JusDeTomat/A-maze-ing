@@ -86,6 +86,7 @@ class App:
         self.maze = 0
         self.size = 0
         self.i_color = 0
+        self.i_color_42 = 0
         self.path = False
         self.color_maze = 0xFF1B2631
         self.color_back = 0xFFD6EAF8
@@ -160,6 +161,34 @@ class App:
         self.color_back = colors[self.i_color][0]
         self.color_path = colors[self.i_color][2]
 
+    def change_42_color(self):
+        colors = [
+            0xFF000000,
+            0xFF1B2631,
+            0xFF145A32,
+            0xFF4A235A,
+            0xFF154360,
+            0xFF641E16,
+            0xFF7D6608,
+            0xFF17202A,
+            0xFF0B5345,
+            0xFF512E5F,
+            0xFF273746,
+            0xFF784212,
+            0xFF4D5656,
+            0xFF7B241C,
+            0xFF1F618D,
+            0xFF186A3B,
+            0xFF6E2C00,
+            0xFF212F3C,
+            0xFF424949,
+            0xFF2C3E50
+        ]
+        self.i_color_42 += 1
+        if (self.i_color >= len(colors)):
+            self.i_color = 0
+        self.color_icon = colors[self.i_color_42]
+
     def scene(self, _):
         if (self.scene_nb == 0):
             self.draw_back()
@@ -185,14 +214,15 @@ class App:
                 self.maze.generate_perfect()
                 self.scene_nb = 0
             if self.check("42color"):
+                self.change_42_color()
                 self.scene_nb = 0
 
     def draw_back(self):
         for y in range((self.size // 2), self.maze_size[0] * self.size + (self.size // 2)):
             for x in range((self.size // 2), self.maze_size[1] * self.size + (self.size // 2)):
                 self.mlx.mlx_pixel_put(self.mlx_ptr, self.win,
-                                       x,
                                        y,
+                                       x,
                                        self.color_back)
 
     def print_wall_W(self, x, y):
@@ -316,6 +346,8 @@ def aff_maze(app, maze):
     else:
         grid = maze
 
+    app.print_start((app.maze.start[0] + 1) * app.size, (app.maze.start[1] + 1) * app.size)
+    app.print_end((app.maze.end[0] + 1) * app.size , (app.maze.end[1] + 1) * app.size)
     for line in grid:
         for case in line:
             walls = None
