@@ -4,7 +4,6 @@ import sys
 from collections import deque
 from parsing import parsing, InvalidConfiguration
 
-config = parsing("config.txt")
 
 class Cell:
     def __init__(self):
@@ -20,18 +19,28 @@ class Cell:
 
 
 class Maze:
-    def __init__(self) -> None:
-        self.width = config["WIDTH"]
-        self.height = config["HEIGHT"]
-        self.start = config["ENTRY"]
-        self.end = config["EXIT"]
-        self.seed = config.get("SEED") if config is not None else None
-        self.perfect = config.get("PERFECT", True)
-        self.output_file = config.get("OUTPUT_FILE")
+    def __init__(
+        self,
+        width: int,
+        height: int,
+        entry: tuple[int, int],
+        exit: tuple[int, int],
+        seed: int | None,
+        perfect: bool
+    ):
+        # init config
+        self.width = width
+        self.height = height
+        self.start = entry
+        self.end = exit
+        self.seed = seed
+        self.perfect = perfect
         self.grid = [
             [Cell() for _ in range(self.width)]
             for _ in range(self.height)
         ]
+
+        # 42 logo
         self.logo = [
             [1,0,1,0,1,1,1],
             [1,0,1,0,0,0,1],
@@ -46,6 +55,20 @@ class Maze:
                 if self.logo[y][x]:
                     self.grid[start_logo_y + y][start_logo_x + x].icon = True
                     self.grid[start_logo_y + y][start_logo_x + x].visited = True
+        
+        # verif entry and exit
+        ex, ey = entry
+        ox, oy = exit
+
+        if not (0 <= ex < width and 0 <= ey < height):
+            raise ValueError("Entry outside maze")
+
+        if not (0 <= ox < width and 0 <= oy < height):
+            raise ValueError("Exit outside maze")
+
+        if entry == exit:
+            raise ValueError("Entry and exit cannot be the same")
+
 
     def get_neighbors(self, x, y):
         neighbors = []
@@ -85,7 +108,6 @@ class Maze:
     def generate_perfect(self, start_x=0, start_y=0):
         stack = []
         current_cell = (start_x, start_y)
-
         if self.seed is not None:
             random.seed(self.seed)
 
@@ -105,8 +127,10 @@ class Maze:
 
     def generate_imperfect(self):
         self.generate_perfect()
+
         if self.seed is not None:
             random.seed(self.seed)
+
         maze_size = self.height * self.width
         for _ in range(max(1, maze_size // 10)):
             x = random.randint(0, self.width - 1)
@@ -126,6 +150,13 @@ class Maze:
 
             if self.grid[y][x].walls[direction] == True:
                 self.remove_wall(x, y, direction)
+
+
+    def generate(self):
+        if self.perfect:
+            self.generate_perfect()
+        else:
+            self.generate_imperfect()
 
 
     def display(self):
@@ -167,6 +198,36 @@ class Maze:
                     line2 += "   +"
 
             print(line2)
+
+
+    def write_output(self, filename: str, path: str):
+
+        with open(filename, "w") as f:
+
+            for y in range(self.height):
+
+                row = ""
+
+                for x in range(self.width):
+
+                    cell = self.grid[y][x]
+
+                    value = (
+                        cell.walls["N"] << 0
+                        | cell.walls["E"] << 1
+                        | cell.walls["S"] << 2
+                        | cell.walls["W"] << 3
+                    )
+
+                    row += format(value, "X")
+
+                f.write(row + "\n")
+
+            f.write("\n")
+
+            f.write(f"{self.start[0]},{self.start[1]}\n")
+            f.write(f"{self.end[0]},{self.end[1]}\n")
+            f.write(path + "\n")
 
     def solve(self):
         for row in self.grid:
@@ -219,6 +280,26 @@ class Maze:
 
         self.path = path_coords
         return path_coords
+
+def path_to_directions(path):
+
+    directions = ""
+
+    for i in range(len(path) - 1):
+
+        x1, y1 = path[i]
+        x2, y2 = path[i + 1]
+
+        if x2 == x1 + 1:
+            directions += "E"
+        elif x2 == x1 - 1:
+            directions += "W"
+        elif y2 == y1 + 1:
+            directions += "S"
+        elif y2 == y1 - 1:
+            directions += "N"
+
+    return directions
 
 
 def main():

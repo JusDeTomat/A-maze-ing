@@ -17,7 +17,7 @@ def str_to_dict(content: str) -> Dict[str, Any]:
             raise InvalidConfiguration(f"Invalid line (no '='): {raw}")
 
         key, val = line.split("=", 1)
-        key = key.strip().upper()
+        key = key.strip()
         val = val.strip()
 
         try:
@@ -38,11 +38,24 @@ def str_to_dict(content: str) -> Dict[str, Any]:
                 else:
                     raise InvalidConfiguration(f"Invalid boolean for PERFECT: {val}")
             elif key == "SEED":
-                result[key] = None if val.lower() == "none" else val
+                result[key] = None if val.lower() == "none" else int(val)
             else:
                 raise InvalidConfiguration(f"Unknown configuration key: {key}")
+
         except ValueError as e:
             raise InvalidConfiguration(f"Invalid value for {key}: {val}") from e
+    required = [
+        "WIDTH",
+        "HEIGHT",
+        "ENTRY",
+        "EXIT",
+        "OUTPUT_FILE",
+        "PERFECT"
+    ]
+
+    for key in required:
+        if key not in result.keys():
+            raise ValueError(f"Missing key: {key}")
     return result
 
 

@@ -1,43 +1,40 @@
 #!/usr/bin/env python3
 import sys
-from parsing import parsing, InvalidConfiguration
+from parsing import parsing
+from maze_generator import Maze, path_to_directions
+from visual import App, display_maze
 
+def main():
+    if len(sys.argv) != 2:
+        print("Usage: python3 a_maze_ing.py config.txt")
+        sys.exit(1)
 
-def main(argv=None):
+    config_file = sys.argv[1]
+
+    try:
+        config = parsing(config_file)
+    except Exception as e:
+        print(f"Error: {e}")
+        sys.exit(1)
+
+    maze = Maze(
+        config["WIDTH"],
+        config["HEIGHT"],
+        config["ENTRY"],
+        config["EXIT"],
+        config["SEED"],
+        config["PERFECT"]
+    )
+
+    maze.generate()
+
+    path = maze.solve()
+
+    directions = path_to_directions(path)
+
+    maze.write_output(config["OUTPUT_FILE"], directions)
     
-    argv = argv if argv is not None else sys.argv
-    if len(argv) < 2:
-        print("Usage: python3 a_maze_ing.py <config_file>")
-        return 1
-
-    config_path = argv[1]
-
-    try:
-        cfg = parsing(config_path)
-    except FileNotFoundError:
-        print(f"[ERROR] Configuration file not found: {config_path}")
-        return 2
-    except PermissionError:
-        print(f"[ERROR] Permission denied reading configuration: {config_path}")
-        return 3
-    except InvalidConfiguration as e:
-        print(f"[ERROR] Invalid configuration: {e}")
-        return 4
-
-    try:
-        import visual
-    except Exception as e:
-        print(f"[ERROR] Cannot import visual module: {e}")
-        return 5
-
-    try:
-        try:
-            return visual.main(config_path)
-        except TypeError:
-            return visual.main()
-    except Exception as e:
-        print(f"[ERROR] Failed to start visual: {e}")
-        return 6
+    display_maze()
 
 
 if __name__ == "__main__":

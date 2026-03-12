@@ -82,7 +82,7 @@ class Button:
 
 
 class App:
-    def __init__(self):
+    def __init__(self, maze: Maze):
         self.mlx = None
         self.mlx_ptr = None
         self.win = None
@@ -91,7 +91,7 @@ class App:
         self.scene_nb = 0
         self.button = {}
         self.click = 0
-        self.maze = 0
+        self.maze = maze
         self.size = 0
         self.i_color = 0
         self.i_color_42 = 0
@@ -482,10 +482,9 @@ def aff_maze(app, maze):
         y += app.size
 
 
-def main():
+def display_maze(self):
     app = App()
     app.mlx = Mlx()
-    maze = Maze()
     app.mlx_ptr = app.mlx.mlx_init()
     app.maze_size = (maze.width, maze.height)
     app.size = app.cal_size(app.maze_size[0], app.maze_size[1])
@@ -522,8 +521,8 @@ def main():
                                    150, 50, "Change 42 color"
                                    )
     app.load_image()
-    maze.generate_perfect()
-    maze.solve()
+    self.maze.generate_perfect()
+    self.maze.solve()
     app.maze = maze
     app.mlx.mlx_mouse_hook(app.win, mouse_hook, app)
     app.mlx.mlx_loop_hook(app.mlx_ptr, app.scene, app)
