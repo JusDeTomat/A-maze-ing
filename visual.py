@@ -174,27 +174,37 @@ class App:
 
     def change_42_color(self):
         colors = [
-            0xFF000000,
-            0xFF1B2631,
-            0xFF145A32,
-            0xFF4A235A,
-            0xFF154360,
-            0xFF641E16,
-            0xFF7D6608,
-            0xFF17202A,
-            0xFF0B5345,
-            0xFF512E5F,
-            0xFF273746,
-            0xFF784212,
-            0xFF4D5656,
-            0xFF7B241C,
-            0xFF1F618D,
-            0xFF186A3B,
-            0xFF6E2C00,
-            0xFF212F3C,
-            0xFF424949,
-            0xFF2C3E50
-        ]
+            0xFFFF0000,
+            0xFFFF4500,
+            0xFFFF6A00,
+            0xFFFFA500,
+            0xFFFFD700,
+            0xFFFFFF00,
+            0xFFADFF2F,
+            0xFF7FFF00,
+            0xFF00FF00,
+            0xFF00FF7F,
+            0xFF00FFFF,
+            0xFF00BFFF,
+            0xFF1E90FF,
+            0xFF0000FF,
+            0xFF4B0082,
+            0xFF8A2BE2,
+            0xFF9400D3,
+            0xFFFF00FF,
+            0xFFFF1493,
+            0xFFFF69B4,
+            0xFFFF007F,
+            0xFFFF3F3F,
+            0xFFFF7F50,
+            0xFFFF8C00,
+            0xFFFFE600,
+            0xFFBFFF00,
+            0xFF32FF32,
+            0xFF00FFBF,
+            0xFF00E5FF,
+            0xFF3399FF
+            ]
         self.i_color_42 += 1
         if (self.i_color >= len(colors)):
             self.i_color = 0
