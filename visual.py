@@ -106,6 +106,8 @@ class App:
         self.color_start = 0xFFFFFF00
         self.color_end = 0xFFFF6347
         self.wall_size = 1
+        self.img_png = {}
+        self.win_size = (0, 0)
 
     def add_img(self, name):
         self.img_png[name] = ImgData()
@@ -210,8 +212,8 @@ class App:
             0xFF3399FF
             ]
         self.i_color_42 += 1
-        if (self.i_color >= len(colors)):
-            self.i_color = 0
+        if (self.i_color_42 >= len(colors)):
+            self.i_color_42 = 0
         self.color_icon = colors[self.i_color_42]
 
     def scene(self, _):
@@ -256,8 +258,15 @@ class App:
                     self.scene_nb = 0
             if self.check("generate"):
                 if not self.during_animate:
-                    maze = Maze()
-                    maze.generate_perfect()
+                    maze = Maze(
+                        self.maze.width,
+                        self.maze.height,
+                        self.maze.start,
+                        self.maze.end,
+                        self.maze.seed,
+                        self.maze.perfect
+                    )
+                    maze.generate()
                     maze.solve()
                     self.maze = maze
                     self.scene_nb = 0
@@ -482,8 +491,8 @@ def aff_maze(app, maze):
         y += app.size
 
 
-def display_maze(self):
-    app = App()
+def display_maze(maze):
+    app = App(maze)
     app.mlx = Mlx()
     app.mlx_ptr = app.mlx.mlx_init()
     app.maze_size = (maze.width, maze.height)
@@ -521,9 +530,6 @@ def display_maze(self):
                                    150, 50, "Change 42 color"
                                    )
     app.load_image()
-    self.maze.generate_perfect()
-    self.maze.solve()
-    app.maze = maze
     app.mlx.mlx_mouse_hook(app.win, mouse_hook, app)
     app.mlx.mlx_loop_hook(app.mlx_ptr, app.scene, app)
     app.mlx.mlx_hook(app.win, 33, 0, app.close_win, None)
@@ -531,5 +537,4 @@ def display_maze(self):
     app.mlx.mlx_loop(app.mlx_ptr)
 
 
-if (__name__ == "__main__"):
-    main()
+

@@ -34,7 +34,7 @@ def main():
 
     maze.write_output(config["OUTPUT_FILE"], directions)
     
-    display_maze()
+    display_maze(maze)
 
 
 if __name__ == "__main__":
