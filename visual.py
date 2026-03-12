@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 from mlx import Mlx
-import random
-from maze_generator import Maze, Cell
+from maze_generator import Maze
+
 
 class ImgData:
     """Structure for image data"""
@@ -13,6 +13,13 @@ class ImgData:
         self.sl = 0
         self.bpp = 0
         self.iformat = 0
+
+    def put_pixel(self, x, y, color):
+        offset = y * self.sl + x * (self.bpp // 8)
+        self.data[offset + 0] = color & 0xFF
+        self.data[offset + 1] = (color >> 8) & 0xFF
+        self.data[offset + 2] = (color >> 16) & 0xFF
+        self.data[offset + 3] = (color >> 24) & 0xFF
 
 
 class Button:
@@ -79,7 +86,7 @@ class App:
         self.mlx_ptr = None
         self.win = None
         self.maze_size = (0, 0)
-        self.img_png = {}
+        self.img = ImgData()
         self.scene_nb = 0
         self.button = {}
         self.click = 0
@@ -102,11 +109,16 @@ class App:
     def close_win(self, _):
         self.mlx.mlx_loop_exit(self.mlx_ptr)
 
-    def load_image_pgn(self, name):
-        self.add_img(name)
-        result = self.mlx.mlx_png_file_to_image(self.mlx_ptr, name)
-        self.img_png[name].img, self.img_png[name].width, self.img_png[name].height = result
-        self.img_png[name].data, self.img_png[name].bpp, self.img_png[name].sl, self.img_png[name].iformat = self.mlx.mlx_get_data_addr(self.img_png[name].img)
+    def load_image(self):
+        self.img.img = self.mlx.mlx_new_image(self.mlx_ptr,
+                                              (self.maze_size[0] *
+                                               self.size) + (self.size),
+                                              (self.maze_size[1] *
+                                               self.size) + (self.size))
+        (self.img.data,
+         self.img.bpp,
+         self.img.sl,
+         self.img.iformat) = self.mlx.mlx_get_data_addr(self.img.img)
 
     def draw_image(self, name):
         self.mlx.mlx_put_image_to_window(self.mlx_ptr, self.win,
@@ -120,7 +132,6 @@ class App:
         else:
             h = (self.maze_size[1] * (self.size) + self.size)
         w = int((self.maze_size[0] * (self.size) + self.size))
-        
         return (w + 300, h)
 
     def check(self, name):
@@ -196,6 +207,12 @@ class App:
                 self.maze.solve()
                 self.aff_path()
             aff_maze(self, self.maze)
+            self.mlx.mlx_put_image_to_window(self.mlx_ptr,
+                                             self.win,
+                                             self.img.img,
+                                             0,
+                                             0
+                                             )
             self.scene_nb = 1
         if (self.scene_nb == 1):
             if self.check("show_path"):
@@ -218,25 +235,26 @@ class App:
                 self.scene_nb = 0
 
     def draw_back(self):
-        for y in range((self.size // 2), self.maze_size[0] * self.size + (self.size // 2)):
-            for x in range((self.size // 2), self.maze_size[1] * self.size + (self.size // 2)):
-                self.mlx.mlx_pixel_put(self.mlx_ptr, self.win,
-                                       y,
-                                       x,
-                                       self.color_back)
+        for y in range((self.size // 2),
+                       (self.maze_size[0] * self.size) + (self.size // 2)):
+            for x in range((self.size // 2),
+                           (self.maze_size[1] * self.size) + (self.size // 2)):
+                self.img.put_pixel(y,
+                                   x,
+                                   self.color_back)
 
     def print_wall_W(self, x, y):
         for i in range(self.size):
             for j in range(self.wall_size):
-                self.mlx.mlx_pixel_put(self.mlx_ptr, self.win,
-                                       (x - (self.size // 2)) + i,
-                                       y - (self.size // 2) + j,
-                                       self.color_maze)
+                self.img.put_pixel(
+                                   (x - (self.size // 2)) + i,
+                                   y - (self.size // 2) + j,
+                                   self.color_maze)
 
     def print_wall_S(self, x, y):
         for i in range(self.size):
             for j in range(self.wall_size):
-                self.mlx.mlx_pixel_put(self.mlx_ptr, self.win,
+                self.img.put_pixel(
                                        x + (self.size // 2) - j,
                                        (y - (self.size // 2)) + i,
                                        self.color_maze)
@@ -244,7 +262,7 @@ class App:
     def print_wall_E(self, x, y):
         for i in range(self.size):
             for j in range(self.wall_size):
-                self.mlx.mlx_pixel_put(self.mlx_ptr, self.win,
+                self.img.put_pixel(
                                        (x - (self.size // 2)) + i,
                                        y + (self.size // 2) - j,
                                        self.color_maze)
@@ -252,7 +270,7 @@ class App:
     def print_wall_N(self, x, y):
         for i in range(self.size):
             for j in range(self.wall_size):
-                self.mlx.mlx_pixel_put(self.mlx_ptr, self.win,
+                self.img.put_pixel(
                                        x - (self.size // 2) + j,
                                        (y - (self.size // 2)) + i,
                                        self.color_maze)
@@ -263,7 +281,7 @@ class App:
         while ((y - (self.size // 2)) + i <= y + (self.size // 2)):
             j = 0
             while ((x - (self.size // 2) + j <= x + (self.size // 2))):
-                self.mlx.mlx_pixel_put(self.mlx_ptr, self.win,
+                self.img.put_pixel(
                                        (x - (self.size // 2)) + j,
                                        (y - (self.size // 2)) + i,
                                        self.color_icon)
@@ -276,7 +294,7 @@ class App:
         while ((y - (self.size // 2)) + i <= y + (self.size // 2)):
             j = 0
             while ((x - (self.size // 2) + j <= x + (self.size // 2))):
-                self.mlx.mlx_pixel_put(self.mlx_ptr, self.win,
+                self.img.put_pixel(
                                        (x - (self.size // 2)) + j,
                                        (y - (self.size // 2)) + i,
                                        self.color_start)
@@ -289,7 +307,7 @@ class App:
         while ((y - (self.size // 2)) + i <= y + (self.size // 2)):
             j = 0
             while ((x - (self.size // 2) + j <= x + (self.size // 2))):
-                self.mlx.mlx_pixel_put(self.mlx_ptr, self.win,
+                self.img.put_pixel(
                                        (x - (self.size // 2)) + j,
                                        (y - (self.size // 2)) + i,
                                        self.color_end)
@@ -302,7 +320,7 @@ class App:
         while ((y - (self.size // 2)) + i <= y + (self.size // 2)):
             j = 0
             while ((x - (self.size // 2) + j <= x + (self.size // 2))):
-                self.mlx.mlx_pixel_put(self.mlx_ptr, self.win,
+                self.img.put_pixel(
                                        (x - (self.size // 2)) + j,
                                        (y - (self.size // 2)) + i,
                                        self.color_path)
@@ -346,8 +364,12 @@ def aff_maze(app, maze):
     else:
         grid = maze
 
-    app.print_start((app.maze.start[0] + 1) * app.size, (app.maze.start[1] + 1) * app.size)
-    app.print_end((app.maze.end[0] + 1) * app.size , (app.maze.end[1] + 1) * app.size)
+    app.print_start(
+        (app.maze.start[0] + 1) * app.size,
+        (app.maze.start[1] + 1) * app.size)
+    app.print_end(
+        (app.maze.end[0] + 1) * app.size,
+        (app.maze.end[1] + 1) * app.size)
     for line in grid:
         for case in line:
             walls = None
@@ -382,35 +404,38 @@ def main():
     app.maze_size = (maze.width, maze.height)
     app.size = app.cal_size(app.maze_size[0], app.maze_size[1])
     app.win_size = app.cal_win_size()
-    print(app.win_size)
-    app.win = app.mlx.mlx_new_window(app.mlx_ptr, app.win_size[0], app.win_size[1], "A-maze-ing")
+    app.win = app.mlx.mlx_new_window(app.mlx_ptr,
+                                     app.win_size[0],
+                                     app.win_size[1],
+                                     "A-maze-ing")
     app.button["generate"] = Button(app.mlx, app.mlx_ptr, app.win, 350, 400,
                                     150, 60, "Generate")
     app.button["show_path"] = Button(app.mlx, app.mlx_ptr, app.win,
                                      int(app.win_size[0] - 225),
-                                     int((app.win_size[1] // 2) - 55),
+                                     int((app.win_size[1] // 2) - 30),
                                      150, 50, "Show Path"
                                      )
     app.button["color_maze"] = Button(app.mlx, app.mlx_ptr, app.win,
                                       int(app.win_size[0] - 225),
-                                      int((app.win_size[1] // 2)),
+                                      int((app.win_size[1] // 2) + 25),
                                       150, 50, "Change Color"
                                       )
     app.button["generate"] = Button(app.mlx, app.mlx_ptr, app.win,
                                     int(app.win_size[0] - 225),
-                                    int((app.win_size[1] // 2) - 110),
+                                    int((app.win_size[1] // 2) - 85),
                                     150, 50, "Generate"
                                     )
     app.button["exit"] = Button(app.mlx, app.mlx_ptr, app.win,
                                 int(app.win_size[0] - 225),
-                                int(app.win_size[1] - 95),
+                                int(app.win_size[1] - 70),
                                 150, 50, "Exit"
                                 )
     app.button["42color"] = Button(app.mlx, app.mlx_ptr, app.win,
                                    int(app.win_size[0] - 225),
-                                   int((app.win_size[1] // 2) - 165),
+                                   int((app.win_size[1] // 2) - 140),
                                    150, 50, "Change 42 color"
                                    )
+    app.load_image()
     maze.generate_perfect()
     maze.solve()
     app.maze = maze
