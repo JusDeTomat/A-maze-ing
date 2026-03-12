@@ -97,6 +97,8 @@ class App:
         self.i_color_42 = 0
         self.path = False
         self.animate = True
+        self.during_animate = False
+        self.case = (-1, -1)
         self.color_maze = 0xFF1B2631
         self.color_back = 0xFFD6EAF8
         self.color_icon = 0xFF2ECC71
@@ -213,9 +215,18 @@ class App:
         self.color_icon = colors[self.i_color_42]
 
     def scene(self, _):
+        if self.during_animate:
+            self.animation()
+            self.mlx.mlx_put_image_to_window(self.mlx_ptr,
+                                             self.win,
+                                             self.img.img,
+                                             0,
+                                             0
+                                             )
+
         if (self.scene_nb == 0):
             self.draw_back()
-            if self.path:
+            if self.path and not self.during_animate:
                 self.maze.solve()
                 self.aff_path()
             aff_maze(self, self.maze)
@@ -226,25 +237,85 @@ class App:
                                              0
                                              )
             self.scene_nb = 1
+
         if (self.scene_nb == 1):
             if self.check("show_path"):
-                if (self.path):
-                    self.path = False
-                else:
-                    self.path = True
-                self.scene_nb = 0
+                if not self.during_animate:
+                    if (self.path):
+                        self.path = False
+                    else:
+                        if (self.animate):
+                            self.during_animate = True
+                        self.path = True
+                    self.scene_nb = 0
             if self.check("exit"):
                 self.close_win(None)
             if self.check("color_maze"):
-                self.change_color()
-                self.scene_nb = 0
+                if not self.during_animate:
+                    self.change_color()
+                    self.scene_nb = 0
             if self.check("generate"):
-                self.maze = Maze()
-                self.maze.generate_perfect()
-                self.scene_nb = 0
+                if not self.during_animate:
+                    self.maze = Maze()
+                    self.maze.generate_perfect()
+                    self.scene_nb = 0
             if self.check("42color"):
-                self.change_42_color()
-                self.scene_nb = 0
+                if not self.during_animate:
+                    self.change_42_color()
+                    self.scene_nb = 0
+    
+    def animation(self):
+        move = True
+        if (self.case == (-1, -1)):
+            self.case = self.maze.start
+            for line in self.maze.grid:
+                for case in line:
+                    case.visited = False
+        if self.case == self.maze.end:
+            self.print_path((self.case[0] + 1) * self.size, (self.case[1] + 1) * self.size)
+            self.during_animate = False
+            self.case = self.maze.start
+            for line in self.maze.grid:
+                for case in line:
+                    case.visited = False
+            self.scene_nb = 0
+        else:
+            self.print_path((self.case[0] + 1) * self.size, (self.case[1] + 1) * self.size)
+            if self.maze.grid[self.case[1]][self.case[0]].walls.get("N", False):
+                self.print_wall_N((self.case[0] + 1) * self.size, (self.case[1] + 1) * self.size)
+            if self.maze.grid[self.case[1]][self.case[0]].walls.get("S", False):
+                self.print_wall_S((self.case[0] + 1) * self.size, (self.case[1] + 1) * self.size)
+            if self.maze.grid[self.case[1]][self.case[0]].walls.get("E", False):
+                self.print_wall_E((self.case[0] + 1) * self.size, (self.case[1] + 1) * self.size)
+            if self.maze.grid[self.case[1]][self.case[0]].walls.get("W", False):
+                self.print_wall_W((self.case[0] + 1) * self.size, (self.case[1] + 1) * self.size)
+            if not self.maze.grid[self.case[1]][self.case[0]].walls.get("N", False):
+                if move:
+                    if self.maze.grid[self.case[1] - 1][self.case[0]].path and not self.maze.grid[self.case[1] - 1][self.case[0]].visited:
+                        move = False
+                        self.maze.grid[self.case[1]][self.case[0]].visited = True
+                        self.case = (self.case[0], self.case[1] - 1)
+            if not self.maze.grid[self.case[1]][self.case[0]].walls.get("S", False):
+                if move:
+                    if self.maze.grid[self.case[1] + 1][self.case[0]].path and not self.maze.grid[self.case[1] + 1][self.case[0]].visited:
+                        move = False
+                        self.maze.grid[self.case[1]][self.case[0]].visited = True
+                        self.case = (self.case[0], self.case[1] + 1)
+            
+            if not self.maze.grid[self.case[1]][self.case[0]].walls.get("E", False):
+                if move:
+                    if self.maze.grid[self.case[1]][self.case[0] + 1].path and not self.maze.grid[self.case[1]][self.case[0] + 1].visited:
+                        move = False
+                        self.maze.grid[self.case[1]][self.case[0]].visited = True
+                        self.case = (self.case[0] + 1, self.case[1])
+            if not self.maze.grid[self.case[1]][self.case[0]].walls.get("W", False):
+                if move:
+                    if self.maze.grid[self.case[1]][self.case[0] - 1].path and not self.maze.grid[self.case[1]][self.case[0] - 1].visited:
+                        move = False
+                        self.maze.grid[self.case[1]][self.case[0]].visited = True
+                        self.case = (self.case[0] - 1, self.case[1])
+            
+                
 
     def draw_back(self):
         for y in range((self.size // 2),
@@ -255,7 +326,7 @@ class App:
                                    x,
                                    self.color_back)
 
-    def print_wall_W(self, x, y):
+    def print_wall_N(self, x, y):
         for i in range(self.size):
             for j in range(self.wall_size):
                 self.img.put_pixel(
@@ -263,7 +334,7 @@ class App:
                                    y - (self.size // 2) + j,
                                    self.color_maze)
 
-    def print_wall_S(self, x, y):
+    def print_wall_E(self, x, y):
         for i in range(self.size):
             for j in range(self.wall_size):
                 self.img.put_pixel(
@@ -271,7 +342,7 @@ class App:
                                        (y - (self.size // 2)) + i,
                                        self.color_maze)
 
-    def print_wall_E(self, x, y):
+    def print_wall_S(self, x, y):
         for i in range(self.size):
             for j in range(self.wall_size):
                 self.img.put_pixel(
@@ -279,7 +350,7 @@ class App:
                                        y + (self.size // 2) - j,
                                        self.color_maze)
 
-    def print_wall_N(self, x, y):
+    def print_wall_W(self, x, y):
         for i in range(self.size):
             for j in range(self.wall_size):
                 self.img.put_pixel(
@@ -342,37 +413,13 @@ class App:
     def aff_path(self):
         x = self.size
         y = self.size
-        if self.animate:
-            case = self.maze.start
-            while case != self.maze.end:
-                if self.maze.grid[case[1]][case[0]].walls.get("N", False):
-                    if self.maze.grid[case[1] + 1][case[0]].path:
-                        case[1] = case[1] + 1
-                if self.maze.grid[case[1]][case[0]].walls.get("S", False):
-                    if self.maze.grid[case[1] + 1][case[0]].path:
-                        case[1] -= 1
-                if self.maze.grid[case[1]][case[0]].walls.get("E", False):
-                    if self.maze.grid[case[1] + 1][case[0]].path:
-                        case[0] += 1
-                if self.maze.grid[case[1]][case[0]].walls.get("W", False):
-                    if self.maze.grid[case[1] + 1][case[0]].path:
-                        case[0] -= 1
-                self.print_path(case[1], case[0])
-                self.mlx.mlx_put_image_to_window(self.mlx_ptr,
-                                             self.win,
-                                             self.img.img,
-                                             0,
-                                             0
-                                             )
-                time.sleep(0.01)
-        else:
-            for line in self.maze.grid:
-                for case in line:
-                    if case.path:
-                        self.print_path(x, y)
-                    x += self.size
-                x = self.size
-                y += self.size
+        for line in self.maze.grid:
+            for case in line:
+                if case.path:
+                    self.print_path(x, y)
+                x += self.size
+            x = self.size
+            y += self.size
 
     def cal_size(self, x, y):
         i = 0
@@ -418,13 +465,13 @@ def aff_maze(app, maze):
 
             if not icon:
                 if walls is not None and walls.get("N", False):
-                    app.print_wall_W(x, y)
-                if walls is not None and walls.get("E", False):
-                    app.print_wall_S(x, y)
-                if walls is not None and walls.get("S", False):
-                    app.print_wall_E(x, y)
-                if walls is not None and walls.get("W", False):
                     app.print_wall_N(x, y)
+                if walls is not None and walls.get("E", False):
+                    app.print_wall_E(x, y)
+                if walls is not None and walls.get("S", False):
+                    app.print_wall_S(x, y)
+                if walls is not None and walls.get("W", False):
+                    app.print_wall_W(x, y)
             else:
                 app.print_icon(x, y)
             x += app.size
