@@ -5,7 +5,6 @@ from collections import deque
 from parsing import parsing, InvalidConfiguration
 
 config = parsing("config.txt")
-print(config)
 
 class Cell:
     def __init__(self):

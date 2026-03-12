@@ -256,8 +256,10 @@ class App:
                     self.scene_nb = 0
             if self.check("generate"):
                 if not self.during_animate:
-                    self.maze = Maze()
-                    self.maze.generate_perfect()
+                    maze = Maze()
+                    maze.generate_perfect()
+                    maze.solve()
+                    self.maze = maze
                     self.scene_nb = 0
             if self.check("42color"):
                 if not self.during_animate:
@@ -274,7 +276,7 @@ class App:
         if self.case == self.maze.end:
             self.print_path((self.case[0] + 1) * self.size, (self.case[1] + 1) * self.size)
             self.during_animate = False
-            self.case = self.maze.start
+            self.case = (-1, -1)
             for line in self.maze.grid:
                 for case in line:
                     case.visited = False
@@ -289,6 +291,7 @@ class App:
                 self.print_wall_E((self.case[0] + 1) * self.size, (self.case[1] + 1) * self.size)
             if self.maze.grid[self.case[1]][self.case[0]].walls.get("W", False):
                 self.print_wall_W((self.case[0] + 1) * self.size, (self.case[1] + 1) * self.size)
+            
             if not self.maze.grid[self.case[1]][self.case[0]].walls.get("N", False):
                 if move:
                     if self.maze.grid[self.case[1] - 1][self.case[0]].path and not self.maze.grid[self.case[1] - 1][self.case[0]].visited:

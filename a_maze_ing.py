@@ -4,10 +4,7 @@ from parsing import parsing, InvalidConfiguration
 
 
 def main(argv=None):
-    """Wrapper entrypoint that validates config and launches visual with robust error handling.
-
-    Usage: python3 a_maze_ing.py path/to/config.txt
-    """
+    
     argv = argv if argv is not None else sys.argv
     if len(argv) < 2:
         print("Usage: python3 a_maze_ing.py <config_file>")
@@ -44,4 +41,4 @@ def main(argv=None):
 
 
 if __name__ == "__main__":
-    main()git 
+    main()
