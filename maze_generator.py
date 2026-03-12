@@ -2,9 +2,10 @@
 import random
 import sys
 from collections import deque
-from parsing import parsing
+from parsing import parsing, InvalidConfiguration
 
 config = parsing("config.txt")
+print(config)
 
 class Cell:
     def __init__(self):
@@ -25,14 +26,16 @@ class Maze:
         self.height = config["HEIGHT"]
         self.start = config["ENTRY"]
         self.end = config["EXIT"]
-        self.seed = None
+        self.seed = config.get("SEED") if config is not None else None
+        self.perfect = config.get("PERFECT", True)
+        self.output_file = config.get("OUTPUT_FILE")
         self.grid = [
             [Cell() for _ in range(self.width)]
             for _ in range(self.height)
         ]
         self.logo = [
-            [1,0,0,0,1,1,1],
-            [1,0,0,0,0,0,1],
+            [1,0,1,0,1,1,1],
+            [1,0,1,0,0,0,1],
             [1,1,1,0,1,1,1],
             [0,0,1,0,1,0,0],
             [0,0,1,0,1,1,1],
@@ -148,7 +151,6 @@ class Maze:
             line1 = "|"
             for x in range(self.width):
                 middle = " "
-                # priorité d'affichage: logo (x) > chemin (o)
                 if self.grid[y][x].icon:
                     middle = "x"
                 elif self.grid[y][x].path:
@@ -222,7 +224,7 @@ class Maze:
 
 def main():
     maze = Maze()
-    if config["PERFECT"] == "True":
+    if getattr(maze, "perfect", True):
         maze.generate_perfect()
     else:
         maze.generate_imperfect()
