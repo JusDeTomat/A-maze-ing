@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from mlx import Mlx
 from maze_generator import Maze
+import time
 
 
 class ImgData:
@@ -95,6 +96,7 @@ class App:
         self.i_color = 0
         self.i_color_42 = 0
         self.path = False
+        self.animate = True
         self.color_maze = 0xFF1B2631
         self.color_back = 0xFFD6EAF8
         self.color_icon = 0xFF2ECC71
@@ -340,13 +342,37 @@ class App:
     def aff_path(self):
         x = self.size
         y = self.size
-        for line in self.maze.grid:
-            for case in line:
-                if case.path:
-                    self.print_path(x, y)
-                x += self.size
-            x = self.size
-            y += self.size
+        if self.animate:
+            case = self.maze.start
+            while case != self.maze.end:
+                if self.maze.grid[case[1]][case[0]].walls.get("N", False):
+                    if self.maze.grid[case[1] + 1][case[0]].path:
+                        case[1] = case[1] + 1
+                if self.maze.grid[case[1]][case[0]].walls.get("S", False):
+                    if self.maze.grid[case[1] + 1][case[0]].path:
+                        case[1] -= 1
+                if self.maze.grid[case[1]][case[0]].walls.get("E", False):
+                    if self.maze.grid[case[1] + 1][case[0]].path:
+                        case[0] += 1
+                if self.maze.grid[case[1]][case[0]].walls.get("W", False):
+                    if self.maze.grid[case[1] + 1][case[0]].path:
+                        case[0] -= 1
+                self.print_path(case[1], case[0])
+                self.mlx.mlx_put_image_to_window(self.mlx_ptr,
+                                             self.win,
+                                             self.img.img,
+                                             0,
+                                             0
+                                             )
+                time.sleep(0.01)
+        else:
+            for line in self.maze.grid:
+                for case in line:
+                    if case.path:
+                        self.print_path(x, y)
+                    x += self.size
+                x = self.size
+                y += self.size
 
     def cal_size(self, x, y):
         i = 0
