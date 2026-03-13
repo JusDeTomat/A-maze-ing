@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from typing import Dict, Any
+from secrets import token_hex
  
 
 class InvalidConfiguration(Exception):
@@ -38,7 +39,7 @@ def str_to_dict(content: str) -> Dict[str, Any]:
                 else:
                     raise InvalidConfiguration(f"Invalid boolean for PERFECT: {val}")
             elif key == "SEED":
-                result[key] = None if val.lower() == "none" else int(val)
+                result[key] = token_hex(8) if val.lower() == "none" else val
             else:
                 raise InvalidConfiguration(f"Unknown configuration key: {key}")
 

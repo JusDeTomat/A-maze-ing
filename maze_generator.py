@@ -114,8 +114,8 @@ class Maze:
     def generate_perfect(self, start_x=0, start_y=0):
         stack = []
         current_cell = (start_x, start_y)
-        if self.seed is not None:
-            random.seed(self.seed)
+        
+        random.seed(self.seed)
 
         self.grid[start_y][start_x].visited = True
         stack.append(current_cell)
