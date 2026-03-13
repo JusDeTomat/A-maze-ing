@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 import random
-import sys
 from collections import deque
-from parsing import parsing, InvalidConfiguration
+from typing import List, Tuple, Optional
 
 
 class Cell:
+    """Representation of a single maze cell with walls and state flags."""
+
     def __init__(self):
         self.walls = {
             "N": True,
@@ -19,27 +20,26 @@ class Cell:
 
 
 class Maze:
+    """Maze generation, solving and output utilities."""
+
     def __init__(
         self,
         width: int,
         height: int,
-        entry: tuple[int, int],
-        exit: tuple[int, int],
+        entry: Tuple[int, int],
+        exit: Tuple[int, int],
         output: str,
-        seed: int | None,
+        seed: Optional[str],
         perfect: bool,
         animated: bool
     ):
 
-        #verif config 
         if not (9 <= width <= 500):
             raise ValueError("The width must be between 9 and 500")
 
         if not (7 <= height <= 400):
             raise ValueError("The height must be between 7 and 400")
 
-
-        # init config
         self.width = width
         self.height = height
         self.start = entry
@@ -53,13 +53,12 @@ class Maze:
             for _ in range(self.height)
         ]
 
-        # 42 logo
         self.logo = [
-            [1,0,1,0,1,1,1],
-            [1,0,1,0,0,0,1],
-            [1,1,1,0,1,1,1],
-            [0,0,1,0,1,0,0],
-            [0,0,1,0,1,1,1],
+            [1, 0, 1, 0, 1, 1, 1],
+            [1, 0, 1, 0, 0, 0, 1],
+            [1, 1, 1, 0, 1, 1, 1],
+            [0, 0, 1, 0, 1, 0, 0],
+            [0, 0, 1, 0, 1, 1, 1],
         ]
         start_logo_y = self.height // 2 - 2
         start_logo_x = self.width // 2 - 3
@@ -67,9 +66,9 @@ class Maze:
             for x in range(len(self.logo[0])):
                 if self.logo[y][x]:
                     self.grid[start_logo_y + y][start_logo_x + x].icon = True
-                    self.grid[start_logo_y + y][start_logo_x + x].visited = True
-        
-        # verif entry and exit
+                    self.grid[start_logo_y + y][start_logo_x + x].visited = \
+                        True
+
         ex, ey = entry
         ox, oy = exit
 
@@ -79,17 +78,17 @@ class Maze:
         if not (0 <= ox < width and 0 <= oy < height):
             raise ValueError("Exit outside maze")
 
-        if (self.grid[ey][ex].icon == True):
+        if (self.grid[ey][ex].icon):
             raise ValueError("Entry in the 42 logo")
 
-        if (self.grid[oy][ox].icon == True):
+        if (self.grid[oy][ox].icon):
             raise ValueError("Exit in the 42 logo")
 
         if entry == exit:
             raise ValueError("Entry and exit cannot be the same")
 
-
-    def get_neighbors(self, x, y):
+    def get_neighbors(self, x: int, y: int) -> List[Tuple[str, int, int]]:
+        """Return list of unvisited non-icon neighbors as (dir, nx, ny)."""
         neighbors = []
 
         directions = {
@@ -101,12 +100,14 @@ class Maze:
 
         for direction, (nx, ny) in directions.items():
             if 0 <= nx < self.width and 0 <= ny < self.height:
-                if not self.grid[ny][nx].visited and not self.grid[ny][nx].icon:
+                if not self.grid[ny][nx].visited and \
+                 not self.grid[ny][nx].icon:
                     neighbors.append((direction, nx, ny))
 
         return neighbors
-    
-    def remove_wall(self, x, y, direction):
+
+    def remove_wall(self, x: int, y: int, direction: str) -> None:
+        """Remove the wall between (x,y) and its neighbor in direction."""
         dx = {"E": 1, "W": -1, "N": 0, "S": 0}
         dy = {"E": 0, "W": 0, "N": -1, "S": 1}
 
@@ -122,9 +123,9 @@ class Maze:
 
         self.grid[y][x].walls[direction] = False
         self.grid[ny][nx].walls[opposite[direction]] = False
-    
 
-    def generate_perfect(self, start_x=0, start_y=0):
+    def generate_perfect(self, start_x: int = 0, start_y: int = 0) -> None:
+        """Generate a perfect maze using DFS backtracker from start cell."""
         stack = []
         current_cell = (start_x, start_y)
 
@@ -144,7 +145,9 @@ class Maze:
             else:
                 stack.pop()
 
-    def generate_imperfect(self):
+    def generate_imperfect(self) -> None:
+        """Generate an imperfect maze by
+           creating additional random openings."""
         self.generate_perfect()
 
         if self.seed is not None:
@@ -167,34 +170,35 @@ class Maze:
             if self.grid[y][x].icon or self.grid[ny][nx].icon:
                 continue
 
-            if self.grid[y][x].walls[direction] == True:
+            if self.grid[y][x].walls[direction]:
                 self.remove_wall(x, y, direction)
 
-
-    def generate(self):
+    def generate(self) -> None:
+        """Dispatch perfect or imperfect maze generation."""
         if self.perfect:
             self.generate_perfect()
         else:
             self.generate_imperfect()
         print(self.seed)
 
-
-    def display(self):
+    def display(self) -> None:
+        """Print compact hex representation of the maze to stdout."""
         for y in range(self.height):
             for x in range(self.width):
                 cell_value = 0
-                if self.grid[y][x].walls["N"] == True:
+                if self.grid[y][x].walls["N"]:
                     cell_value += 1
-                if self.grid[y][x].walls["E"] == True:
+                if self.grid[y][x].walls["E"]:
                     cell_value += 2
-                if self.grid[y][x].walls["S"] == True:
+                if self.grid[y][x].walls["S"]:
                     cell_value += 4
-                if self.grid[y][x].walls["W"] == True:
+                if self.grid[y][x].walls["W"]:
                     cell_value += 8
                 print(f"{cell_value:X}", end="")
             print()
 
-    def display_ascii(self):
+    def display_ascii(self) -> None:
+        """Print a human-readable ASCII representation of the maze."""
         print("+" + "---+" * self.width)
 
         for y in range(self.height):
@@ -219,9 +223,8 @@ class Maze:
 
             print(line2)
 
-
-    def write_output(self, filename: str, path: str):
-
+    def write_output(self, filename: str, path: str) -> None:
+        """Write maze hex map, entry, exit and path directions to file."""
         with open(filename, "w") as f:
 
             for y in range(self.height):
@@ -249,7 +252,9 @@ class Maze:
             f.write(f"{self.end[0]},{self.end[1]}\n")
             f.write(path + "\n")
 
-    def solve(self):
+    def solve(self) -> List[Tuple[int, int]]:
+        """Solve the maze using BFS and mark
+           the path; return list of coords."""
         for row in self.grid:
             for cell in row:
                 cell.path = False
@@ -261,10 +266,10 @@ class Maze:
             return []
         if not (0 <= ex < self.width and 0 <= ey < self.height):
             return []
-        
+
         q = deque()
         q.append((sx, sy))
-        parents = { (sx, sy): None }
+        parents = {(sx, sy): None}
 
         found = False
         while q:
@@ -288,7 +293,7 @@ class Maze:
                             parents[(nx, ny)] = (x, y)
                             q.append((nx, ny))
 
-        path_coords = []
+        path_coords: List[Tuple[int, int]] = []
         if found:
             cur = (ex, ey)
             while cur is not None:
@@ -301,7 +306,9 @@ class Maze:
         self.path = path_coords
         return path_coords
 
-def path_to_directions(path):
+
+def path_to_directions(path: List[Tuple[int, int]]) -> str:
+    """Convert a list of coordinates into direction letters (NESW)."""
 
     directions = ""
 
@@ -330,6 +337,7 @@ def main():
         maze.generate_imperfect()
     maze.solve()
     maze.display_ascii()
+
 
 if __name__ == "__main__":
     main()
