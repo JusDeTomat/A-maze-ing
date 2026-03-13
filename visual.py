@@ -226,6 +226,8 @@ class App:
                                             0,
                                             0
                                             )
+            if self.check("exit"):
+                self.close_win(None)
             return
 
         if (self.scene_nb == 0):
@@ -449,7 +451,10 @@ class App:
         self.wall_size = (i - 1) // 8
         if self.wall_size <= 0:
             self.wall_size = 1
-        self.speed = 8 - self.wall_size
+        self.speed = (i)
+        if (self.speed <= 0):
+            self.speed = 1
+        print(self.speed)
         return i - 1
 
 
