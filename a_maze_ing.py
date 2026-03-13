@@ -23,8 +23,10 @@ def main():
             config["HEIGHT"],
             config["ENTRY"],
             config["EXIT"],
+            config["OUTPUT_FILE"],
             config["SEED"],
-            config["PERFECT"]
+            config["PERFECT"],
+            config["ANIMATED"]
         )
 
         maze.generate()
@@ -33,7 +35,7 @@ def main():
 
         directions = path_to_directions(path)
 
-        maze.write_output(config["OUTPUT_FILE"], directions)
+        maze.write_output(maze.output, directions)
         
         display_maze(maze)
     except Exception as e:

@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 from mlx import Mlx
-from maze_generator import Maze
+from maze_generator import Maze, path_to_directions
 import time
+from secrets import token_hex
 
 
 class ImgData:
@@ -267,11 +268,15 @@ class App:
                         self.maze.height,
                         self.maze.start,
                         self.maze.end,
+                        self.maze.output,
                         self.maze.seed,
-                        self.maze.perfect
+                        self.maze.perfect,
+                        self.maze.animated
                     )
+                    maze.seed = token_hex(8)
                     maze.generate()
-                    maze.solve()
+                    path = maze.solve()
+                    maze.write_output(maze.output, path_to_directions(path))
                     self.maze = maze
                     self.scene_nb = 0
             if self.check("42color"):
@@ -451,10 +456,9 @@ class App:
         self.wall_size = (i - 1) // 8
         if self.wall_size <= 0:
             self.wall_size = 1
-        self.speed = (i)
+        self.speed = (i - 25) * -1
         if (self.speed <= 0):
             self.speed = 1
-        print(self.speed)
         return i - 1
 
 
@@ -544,6 +548,7 @@ def display_maze(maze):
                                    int((app.win_size[1] // 2) - 140),
                                    150, 50, "Change 42 color"
                                    )
+    app.animate = app.maze.animated
     app.load_image()
     app.mlx.mlx_hook(app.win, 4, 1 << 2, mouse_hook, app)
     app.mlx.mlx_loop_hook(app.mlx_ptr, app.scene, app)

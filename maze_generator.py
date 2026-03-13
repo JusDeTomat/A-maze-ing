@@ -25,16 +25,29 @@ class Maze:
         height: int,
         entry: tuple[int, int],
         exit: tuple[int, int],
+        output: str,
         seed: int | None,
-        perfect: bool
+        perfect: bool,
+        animated: bool
     ):
+
+        #verif config 
+        if not (9 <= width <= 500):
+            raise ValueError("The width must be between 9 and 500")
+
+        if not (7 <= height <= 400):
+            raise ValueError("The height must be between 7 and 400")
+
+
         # init config
         self.width = width
         self.height = height
         self.start = entry
         self.end = exit
+        self.output = output
         self.seed = seed
         self.perfect = perfect
+        self.animated = animated
         self.grid = [
             [Cell() for _ in range(self.width)]
             for _ in range(self.height)
@@ -114,7 +127,7 @@ class Maze:
     def generate_perfect(self, start_x=0, start_y=0):
         stack = []
         current_cell = (start_x, start_y)
-        
+
         random.seed(self.seed)
 
         self.grid[start_y][start_x].visited = True
@@ -163,6 +176,7 @@ class Maze:
             self.generate_perfect()
         else:
             self.generate_imperfect()
+        print(self.seed)
 
 
     def display(self):
