@@ -66,6 +66,12 @@ class Maze:
         if not (0 <= ox < width and 0 <= oy < height):
             raise ValueError("Exit outside maze")
 
+        if (self.grid[ey][ex].icon == True):
+            raise ValueError("Entry in the 42 logo")
+
+        if (self.grid[oy][ox].icon == True):
+            raise ValueError("Exit in the 42 logo")
+
         if entry == exit:
             raise ValueError("Entry and exit cannot be the same")
 

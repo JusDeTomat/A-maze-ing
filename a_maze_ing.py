@@ -17,24 +17,27 @@ def main():
         print(f"Error: {e}")
         sys.exit(1)
 
-    maze = Maze(
-        config["WIDTH"],
-        config["HEIGHT"],
-        config["ENTRY"],
-        config["EXIT"],
-        config["SEED"],
-        config["PERFECT"]
-    )
+    try:
+        maze = Maze(
+            config["WIDTH"],
+            config["HEIGHT"],
+            config["ENTRY"],
+            config["EXIT"],
+            config["SEED"],
+            config["PERFECT"]
+        )
 
-    maze.generate()
+        maze.generate()
 
-    path = maze.solve()
+        path = maze.solve()
 
-    directions = path_to_directions(path)
+        directions = path_to_directions(path)
 
-    maze.write_output(config["OUTPUT_FILE"], directions)
-    
-    display_maze(maze)
+        maze.write_output(config["OUTPUT_FILE"], directions)
+        
+        display_maze(maze)
+    except Exception as e:
+        print("Error:", e)
 
 
 if __name__ == "__main__":
