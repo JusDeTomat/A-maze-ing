@@ -106,6 +106,7 @@ class App:
         self.color_start = 0xFFFFFF00
         self.color_end = 0xFFFF6347
         self.wall_size = 1
+        self.speed = 1
         self.img_png = {}
         self.win_size = (0, 0)
 
@@ -274,60 +275,53 @@ class App:
                 if not self.during_animate:
                     self.change_42_color()
                     self.scene_nb = 0
-    
+            self.click = 0
+
     def animation(self):
-        move = True
-        if (self.case == (-1, -1)):
-            self.case = self.maze.start
-            for line in self.maze.grid:
-                for case in line:
-                    case.visited = False
-        if self.case == self.maze.end:
-            self.print_path((self.case[0] + 1) * self.size, (self.case[1] + 1) * self.size)
-            self.during_animate = False
-            self.case = (-1, -1)
-            for line in self.maze.grid:
-                for case in line:
-                    case.visited = False
-            self.scene_nb = 0
-        else:
-            self.print_path((self.case[0] + 1) * self.size, (self.case[1] + 1) * self.size)
-            if self.maze.grid[self.case[1]][self.case[0]].walls.get("N", False):
-                self.print_wall_N((self.case[0] + 1) * self.size, (self.case[1] + 1) * self.size)
-            if self.maze.grid[self.case[1]][self.case[0]].walls.get("S", False):
-                self.print_wall_S((self.case[0] + 1) * self.size, (self.case[1] + 1) * self.size)
-            if self.maze.grid[self.case[1]][self.case[0]].walls.get("E", False):
-                self.print_wall_E((self.case[0] + 1) * self.size, (self.case[1] + 1) * self.size)
-            if self.maze.grid[self.case[1]][self.case[0]].walls.get("W", False):
-                self.print_wall_W((self.case[0] + 1) * self.size, (self.case[1] + 1) * self.size)
-            
-            if not self.maze.grid[self.case[1]][self.case[0]].walls.get("N", False):
-                if move:
-                    if self.maze.grid[self.case[1] - 1][self.case[0]].path and not self.maze.grid[self.case[1] - 1][self.case[0]].visited:
-                        move = False
-                        self.maze.grid[self.case[1]][self.case[0]].visited = True
-                        self.case = (self.case[0], self.case[1] - 1)
-            if not self.maze.grid[self.case[1]][self.case[0]].walls.get("S", False):
-                if move:
-                    if self.maze.grid[self.case[1] + 1][self.case[0]].path and not self.maze.grid[self.case[1] + 1][self.case[0]].visited:
-                        move = False
-                        self.maze.grid[self.case[1]][self.case[0]].visited = True
-                        self.case = (self.case[0], self.case[1] + 1)
-            
-            if not self.maze.grid[self.case[1]][self.case[0]].walls.get("E", False):
-                if move:
-                    if self.maze.grid[self.case[1]][self.case[0] + 1].path and not self.maze.grid[self.case[1]][self.case[0] + 1].visited:
-                        move = False
-                        self.maze.grid[self.case[1]][self.case[0]].visited = True
-                        self.case = (self.case[0] + 1, self.case[1])
-            if not self.maze.grid[self.case[1]][self.case[0]].walls.get("W", False):
-                if move:
-                    if self.maze.grid[self.case[1]][self.case[0] - 1].path and not self.maze.grid[self.case[1]][self.case[0] - 1].visited:
-                        move = False
-                        self.maze.grid[self.case[1]][self.case[0]].visited = True
-                        self.case = (self.case[0] - 1, self.case[1])
-            
-                
+        print(self.speed)
+        for _ in range(self.speed):
+            if (self.case == (-1, -1)):
+                self.case = self.maze.start
+                for line in self.maze.grid:
+                    for case in line:
+                        case.visited = False
+            x, y = self.case
+            self.print_path((x + 1) * self.size, (y + 1) * self.size)
+            if self.maze.grid[y][x].walls.get("N", False):
+                self.print_wall_N((x + 1) * self.size, (y + 1) * self.size)
+            if self.maze.grid[y][x].walls.get("S", False):
+                self.print_wall_S((x + 1) * self.size, (y + 1) * self.size)
+            if self.maze.grid[y][x].walls.get("E", False):
+                self.print_wall_E((x + 1) * self.size, (y + 1) * self.size)
+            if self.maze.grid[y][x].walls.get("W", False):
+                self.print_wall_W((x + 1) * self.size, (y + 1) * self.size)
+
+            if self.case == self.maze.end:
+                self.during_animate = False
+                self.case = (-1, -1)
+                for line in self.maze.grid:
+                    for case in line:
+                        case.visited = False
+                self.scene_nb = 0
+                break
+
+            if not self.maze.grid[y][x].walls.get("N", False):
+                if self.maze.grid[y - 1][x].path and not self.maze.grid[y - 1][x].visited:
+                    self.maze.grid[y][x].visited = True
+                    next_case = (x, y - 1)
+            if not self.maze.grid[y][x].walls.get("S", False):
+                if self.maze.grid[y + 1][x].path and not self.maze.grid[y + 1][x].visited:
+                    self.maze.grid[y][x].visited = True
+                    next_case = (x, y + 1)
+            if not self.maze.grid[y][x].walls.get("E", False):
+                if self.maze.grid[y][x + 1].path and not self.maze.grid[y][x + 1].visited:
+                    self.maze.grid[y][x].visited = True
+                    next_case = (x + 1, y)
+            if not self.maze.grid[y][x].walls.get("W", False):
+                if self.maze.grid[y][x - 1].path and not self.maze.grid[y][x - 1].visited:
+                    self.maze.grid[y][x].visited = True
+                    next_case = (x - 1, y)
+            self.case = next_case
 
     def draw_back(self):
         for y in range((self.size // 2),
@@ -339,7 +333,7 @@ class App:
                                    self.color_back)
 
     def print_wall_N(self, x, y):
-        for i in range(self.size):
+        for i in range(self.size + 1):
             for j in range(self.wall_size):
                 self.img.put_pixel(
                                    (x - (self.size // 2)) + i,
@@ -347,7 +341,7 @@ class App:
                                    self.color_maze)
 
     def print_wall_E(self, x, y):
-        for i in range(self.size):
+        for i in range(self.size + 1):
             for j in range(self.wall_size):
                 self.img.put_pixel(
                                        x + (self.size // 2) - j,
@@ -355,7 +349,7 @@ class App:
                                        self.color_maze)
 
     def print_wall_S(self, x, y):
-        for i in range(self.size):
+        for i in range(self.size + 1):
             for j in range(self.wall_size):
                 self.img.put_pixel(
                                        (x - (self.size // 2)) + i,
@@ -363,7 +357,7 @@ class App:
                                        self.color_maze)
 
     def print_wall_W(self, x, y):
-        for i in range(self.size):
+        for i in range(self.size + 1):
             for j in range(self.wall_size):
                 self.img.put_pixel(
                                        x - (self.size // 2) + j,
@@ -435,11 +429,12 @@ class App:
 
     def cal_size(self, x, y):
         i = 0
-        while (x * i <= int(1900 * 0.75) and y * i <= 900):
+        while (x * i <= int(1900 * 0.75) and y * i <= 800):
             i += 1
         self.wall_size = (i - 1) // 8
         if self.wall_size <= 0:
             self.wall_size = 1
+        self.speed = 8 - self.wall_size
         return i - 1
 
 
@@ -530,11 +525,8 @@ def display_maze(maze):
                                    150, 50, "Change 42 color"
                                    )
     app.load_image()
-    app.mlx.mlx_mouse_hook(app.win, mouse_hook, app)
+    app.mlx.mlx_hook(app.win, 4, 1 << 2, mouse_hook, app)
     app.mlx.mlx_loop_hook(app.mlx_ptr, app.scene, app)
     app.mlx.mlx_hook(app.win, 33, 0, app.close_win, None)
 
     app.mlx.mlx_loop(app.mlx_ptr)
-
-
-
