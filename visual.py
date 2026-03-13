@@ -297,11 +297,11 @@ class App:
                     self.print_wall_E((x + 1) * self.size, (y + 1) * self.size)
                 if self.maze.grid[y][x].walls.get("W", False):
                     self.print_wall_W((x + 1) * self.size, (y + 1) * self.size)
-                
+
             else:
                 x, y = self.case
                 next_case = self.case
-                
+
                 self.print_path((x + 1) * self.size, (y + 1) * self.size)
                 if self.maze.grid[y][x].walls.get("N", False):
                     self.print_wall_N((x + 1) * self.size, (y + 1) * self.size)
@@ -451,10 +451,9 @@ class App:
         self.wall_size = (i - 1) // 8
         if self.wall_size <= 0:
             self.wall_size = 1
-        self.speed = (i)
+        self.speed = (i - 25) * -1
         if (self.speed <= 0):
             self.speed = 1
-        print(self.speed)
         return i - 1
 
 
