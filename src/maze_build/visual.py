@@ -1,8 +1,7 @@
-#!/usr/bin/env python3
 from mlx import Mlx
 from .maze_generator import Maze, path_to_directions
 from secrets import token_hex
-from typing import Any, Dict, Tuple, Optional
+from typing import Any, Dict, Tuple
 
 
 class ImgData:
@@ -116,7 +115,7 @@ class App:
     """
 
     def __init__(self, maze: Maze) -> None:
-        self.mlx: Optional[Mlx] = None
+        self.mlx: Mlx = None
         self.mlx_ptr: Any = None
         self.win: Any = None
         self.maze_size: Tuple[int, int] = (0, 0)
@@ -147,7 +146,7 @@ class App:
         """Create and register an off-screen image buffer by name."""
         self.img_png[name] = ImgData()
 
-    def close_win(self, _) -> None:
+    def close_win(self, _: Any) -> None:
         """Request the mlx loop to exit (window close handler)."""
         self.mlx.mlx_loop_exit(self.mlx_ptr)
 
@@ -259,7 +258,7 @@ class App:
             self.i_color_42 = 0
         self.color_icon = colors[self.i_color_42]
 
-    def scene(self, _) -> None:
+    def scene(self, _: Any) -> None:
         """Main loop hook invoked each frame to update and render the scene."""
         if self.during_animate:
             self.animation()

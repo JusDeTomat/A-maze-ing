@@ -12,7 +12,7 @@ def str_to_dict(content: str) -> Dict[str, Any]:
 
     Raises InvalidConfiguration on syntax/value errors.
     """
-    result = {}
+    result: dict[str, int | str | tuple[int, int]] = {}
     lines = content.splitlines()
     for raw in lines:
         line = raw.strip()
@@ -83,7 +83,7 @@ def str_to_dict(content: str) -> Dict[str, Any]:
 
     for key in required:
         if key not in result.keys():
-            raise ValueError(f"Missing key: {key}")
+            raise ValueError(f"Missing valid key: {key}")
     return result
 
 
@@ -103,12 +103,3 @@ def parsing(name_file: str) -> Dict[str, Any]:
         raise
 
     return str_to_dict(content)
-
-
-def main():
-    config = parsing("config.txt")
-    print(config)
-
-
-if __name__ == "__main__":
-    main()

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 import random
 from collections import deque
 from typing import List, Tuple, Optional
@@ -7,7 +6,7 @@ from typing import List, Tuple, Optional
 class Cell:
     """Representation of a single maze cell with walls and state flags."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.walls = {
             "N": True,
             "E": True,
@@ -32,7 +31,7 @@ class Maze:
         seed: Optional[str],
         perfect: bool,
         animated: bool
-    ):
+    ) -> None:
 
         if not (9 <= width <= 500):
             raise ValueError("The width must be between 9 and 500")
@@ -267,9 +266,11 @@ class Maze:
         if not (0 <= ex < self.width and 0 <= ey < self.height):
             return []
 
-        q = deque()
+        q: deque[tuple[int, int]] = deque()
         q.append((sx, sy))
-        parents = {(sx, sy): None}
+        parents: dict[tuple[int, int], None | tuple[int, int]] = {
+            (sx, sy): None
+        }
 
         found = False
         while q:
@@ -295,7 +296,7 @@ class Maze:
 
         path_coords: List[Tuple[int, int]] = []
         if found:
-            cur = (ex, ey)
+            cur: tuple[int, int] | None = (ex, ey)
             while cur is not None:
                 path_coords.append(cur)
                 cur = parents.get(cur)
@@ -327,17 +328,3 @@ def path_to_directions(path: List[Tuple[int, int]]) -> str:
             directions += "N"
 
     return directions
-
-
-def main():
-    maze = Maze()
-    if getattr(maze, "perfect", True):
-        maze.generate_perfect()
-    else:
-        maze.generate_imperfect()
-    maze.solve()
-    maze.display_ascii()
-
-
-if __name__ == "__main__":
-    main()
