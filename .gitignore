@@ -2,3 +2,6 @@
 !a_maze_ing.py
 !pyproject.toml
 !src/
+!lib/
+!README.md
+!Makefile

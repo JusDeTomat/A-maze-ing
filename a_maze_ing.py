@@ -1,12 +1,10 @@
 #!/usr/bin/env python3
 import sys
-import maze_build
 from maze_build import Maze, parsing, display_maze, path_to_directions
 
 
 def main() -> None:
     """Entry point: parse config, generate maze, save and display it."""
-    print(maze_build.__file__)
     if len(sys.argv) != 2:
         print("Usage: python3 a_maze_ing.py config.txt")
         sys.exit(1)
